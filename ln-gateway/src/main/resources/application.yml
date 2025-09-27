@@ -1,0 +1,62 @@
+server:
+  port: 8080
+
+spring:
+  main:
+    web-application-type: reactive
+  cloud:
+    nacos:
+      server-addr: 121.43.245.176:8848
+    gateway:
+      routes:
+        # 用户服务路由
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/user/**
+          filters:
+            - StripPrefix=1
+        # 景区服务路由
+        - id: scenic-service
+          uri: lb://scenic-service
+          predicates:
+            - Path=/scenic/**
+          filters:
+            - StripPrefix=1
+        # 门票服务路由
+        - id: ticket-service
+          uri: lb://ticket-service
+          predicates:
+            - Path=/ticket/**
+          filters:
+            - StripPrefix=1
+        # 评论服务路由
+        - id: comment-service
+          uri: lb://comment-service
+          predicates:
+            - Path=/comment/**
+          filters:
+            - StripPrefix=1
+        # 推荐服务路由
+        - id: recommend-service
+          uri: lb://recommend-service
+          predicates:
+            - Path=/recommend/**
+          filters:
+            - StripPrefix=1
+        # 数据服务路由
+        - id: data-service
+          uri: lb://data-service
+          predicates:
+            - Path=/data/**
+          filters:
+            - StripPrefix=1
+      # 全局跨域配置
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOriginPatterns: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: true
+

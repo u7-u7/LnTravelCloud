@@ -1,0 +1,15 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: ln-gateway
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 121.43.245.176:8848
+      config:
+        server-addr: 121.43.245.176:8848
+        file-extension: yaml
+        namespace: public
+        group: DEFAULT_GROUP

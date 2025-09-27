@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: scenic-service
+  cloud:
+    nacos:
+      server-addr: 121.43.245.176:8848
+      config:
+        file-extension: yaml
+        shared-configs:
+          - dataId: shared-jdbc.yaml
