@@ -11,6 +11,7 @@ import com.lntravel.recommend.entity.AiChatRecord;
 import com.lntravel.recommend.entity.RecommendRecord;
 import com.lntravel.recommend.mapper.AiChatRecordMapper;
 import com.lntravel.recommend.mapper.RecommendRecordMapper;
+import com.lntravel.recommend.service.AiService;
 import com.lntravel.recommend.service.RecommendService;
 import com.lntravel.recommend.utils.RecommendAlgorithm;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,7 @@ public class RecommendServiceImpl implements RecommendService {
     private final ScenicServiceClient scenicServiceClient;
     private final UserServiceClient userServiceClient;
     private final ObjectMapper objectMapper;
+    private final AiService aiService;
     
     @Override
     public List<Object> getPersonalRecommend(Long userId) {
@@ -130,14 +132,16 @@ public class RecommendServiceImpl implements RecommendService {
         log.info("AI聊天推荐: userId={}, message={}", userId, chatDTO.getMessage());
         
         try {
-            // 1. 解析用户消息，提取关键词
-            List<String> keywords = extractKeywords(chatDTO.getMessage());
+            // 1. 使用AI服务分析用户意图和提取关键词
+            aiService.analyzeUserIntent(chatDTO.getMessage()); // 分析用户意图
+            String keywords = aiService.extractKeywords(chatDTO.getMessage());
+            List<String> keywordList = List.of(keywords.split(","));
             
-            // 2. 基于关键词生成推荐
-            List<Object> recommendations = generateAiRecommendations(keywords);
+            // 2. 基于AI分析结果生成推荐
+            List<Object> recommendations = generateAiRecommendations(keywordList);
             
-            // 3. 生成AI回复
-            String aiReply = generateAiReply(chatDTO.getMessage(), recommendations);
+            // 3. 使用AI服务生成智能回复
+            String aiReply = aiService.generateReply(chatDTO.getMessage(), chatDTO.getSessionId());
             
             // 4. 保存聊天记录
             AiChatRecord chatRecord = new AiChatRecord();
@@ -321,8 +325,16 @@ public class RecommendServiceImpl implements RecommendService {
         }
     }
     
+    @SuppressWarnings("unused")
     private List<String> extractKeywords(String message) {
-        return RecommendAlgorithm.extractKeywords(message);
+        // 使用AI服务提取关键词，如果失败则使用本地算法
+        try {
+            String aiKeywords = aiService.extractKeywords(message);
+            return List.of(aiKeywords.split(","));
+        } catch (Exception e) {
+            log.warn("AI关键词提取失败，使用本地算法: {}", e.getMessage());
+            return RecommendAlgorithm.extractKeywords(message);
+        }
     }
     
     private List<Object> generateAiRecommendations(List<String> keywords) {
@@ -345,8 +357,15 @@ public class RecommendServiceImpl implements RecommendService {
         return recommendations;
     }
     
+    @SuppressWarnings("unused")
     private String generateAiReply(String userMessage, List<Object> recommendations) {
-        return RecommendAlgorithm.generateAiReplyTemplate(userMessage, recommendations);
+        // 使用AI服务生成智能回复，如果失败则使用模板
+        try {
+            return aiService.generateReply(userMessage, null);
+        } catch (Exception e) {
+            log.warn("AI回复生成失败，使用模板: {}", e.getMessage());
+            return RecommendAlgorithm.generateAiReplyTemplate(userMessage, recommendations);
+        }
     }
     
     private String convertRecommendationsToJson(List<Object> recommendations) {

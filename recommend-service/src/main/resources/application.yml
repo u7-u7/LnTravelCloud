@@ -1,2 +1,67 @@
 server:
   port: 8085
+
+spring:
+  application:
+    name: recommend-service
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+        namespace: public
+      config:
+        server-addr: localhost:8848
+        file-extension: yml
+  datasource:
+    url: jdbc:mysql://111.229.53.5:3306/ln_travel?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+    username: root
+    password: 032533
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  redis:
+    host: 111.229.53.5
+    port: 6379
+    password: 032533
+    database: 0
+    timeout: 2000
+    lettuce:
+      pool:
+        max-active: 8
+        max-wait: -1
+        max-idle: 8
+        min-idle: 0
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+# AI服务配置
+ai:
+  # AI服务提供商: openai, qwen, wenxin, custom
+  provider: qwen
+  # API密钥
+  api-key: ${AI_API_KEY:sk-e92aa55e986e4597aad42e3e73524233}
+  # API基础URL
+  base-url: ${AI_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions}
+  # 模型名称
+  model: ${AI_MODEL:qwen-plus}
+  # 最大token数
+  max-tokens: 1000
+  # 温度参数（0-1，控制随机性）
+  temperature: 0.7
+  # 请求超时时间（毫秒）
+  timeout: 30000
+  # 重试次数
+  retry-count: 3
+  # 是否启用AI功能
+  enabled: ${AI_ENABLED:true}
+  # 推荐系统提示词模板
+  system-prompt: "你是一个专业的旅游推荐助手，擅长根据用户需求推荐合适的景区。请基于用户的需求和偏好，提供个性化的旅游推荐。"
+  # 用户消息模板
+  user-prompt-template: "用户需求：{userMessage}\n\n请根据以上需求，推荐3-5个合适的景区，并说明推荐理由。"
